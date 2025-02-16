@@ -1,11 +1,16 @@
+#!/bin/bash
 
+# 如果 objs 目录不存在则创建
 if [ ! -d "objs" ]; then
-  mkdir objs
-else
-  rm -rf objs
-  mkdir objs
+    mkdir objs
 fi
 
 cd objs
-cmake ..
-make -j 4
+
+# 只有当 CMakeCache.txt 不存在时才运行 cmake
+if [ ! -f "CMakeCache.txt" ]; then
+    cmake ..
+fi
+
+# 增量编译
+make -j4

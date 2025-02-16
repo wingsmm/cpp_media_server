@@ -47,6 +47,7 @@ include_directories(src
 #link_directories(${CMAKE_BINARY_DIR}/output/lib /usr/local/lib64 /usr/local/lib)
 link_directories(${CMAKE_BINARY_DIR}/output/lib /usr/local/lib64 /usr/local/lib)
 add_subdirectory(3rdparty)
+add_subdirectory(src/protocol)
 
 #add_executable(ws_server_demo
 #            src/net/websocket/ws_server_demo.cpp
