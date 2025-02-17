@@ -211,3 +211,4 @@ test/test_srtp
 ######################### libsdptransform ###############################
 /deps/
 /build/
+/demo/

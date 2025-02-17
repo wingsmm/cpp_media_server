@@ -8,9 +8,9 @@
 
 class ProtocolManager {
 public:
-    static ProtocolManager& get_instance() {
+    static ProtocolManager* get_instance() {
         static ProtocolManager instance;
-        return instance;
+        return &instance;
     }
 
     // 创建转换器
