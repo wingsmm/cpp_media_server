@@ -5,6 +5,8 @@ set(SERVER_SRCS
     webrtc_server.cpp
     webrtc_peer.cpp
     server_config.cpp
+    ${CMAKE_SOURCE_DIR}/src/net/http/http_server.cpp
+    ${CMAKE_SOURCE_DIR}/src/net/http/http_session.cpp
 )
 
 # 创建静态库
@@ -20,5 +22,10 @@ target_include_directories(protocol_server
 target_link_libraries(protocol_server
     protocol_converter
     utils_common
+    uv
+    ssl
+    crypto
+    dl
+    pthread
     ${COMMON_LIBS}
 ) 

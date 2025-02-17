@@ -17,6 +17,7 @@ target_include_directories(media_server PRIVATE
 target_link_libraries(media_server
     protocol_converter
     protocol_server
+    pthread
     ${COMMON_LIBS}
 )
 

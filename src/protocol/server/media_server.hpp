@@ -1,6 +1,7 @@
 #pragma once
 #include "server_config.hpp"
 #include "../converter/protocol_manager.hpp"
+#include "net/http/http_server.hpp"
 #include <atomic>
 #include <memory>
 
@@ -59,9 +60,16 @@ private:
     void stop_rtmp_server();
     bool start_webrtc_server();
     void stop_all_servers();
+
+    // HTTP 请求处理函数
+    static void handle_webrtc_play(const http_request* request, std::shared_ptr<http_response> response);
+    static void handle_webrtc_publish(const http_request* request, std::shared_ptr<http_response> response);
+    static void handle_webrtc_stats(const http_request* request, std::shared_ptr<http_response> response);
     
+private:
     ServerConfig config_;
     std::atomic<bool> running_{false};
     ProtocolManager* protocol_mgr_{nullptr};
     ServerStats stats_;
+    std::unique_ptr<http_server> http_server_;
 }; 

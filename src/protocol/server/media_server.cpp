@@ -1,8 +1,10 @@
 #include "media_server.hpp"
 #include "utils/logger.hpp"
+#include "json.hpp"
 #include <signal.h>
 #include <thread>
-#include "utils/config.hpp"
+
+using json = nlohmann::json;
 
 bool MediaServer::init(const std::string& config_file) {
     // 加载配置文件
@@ -35,7 +37,112 @@ bool MediaServer::init(const std::string& config_file) {
     // 设置信号处理
     setup_signal_handlers();
     
+    // 初始化 HTTP 服务器
+    http_server_ = std::make_unique<http_server>(uv_default_loop(), config_.server.webrtc_port);
+    
+    // 添加 HTTP 路由处理
+    http_server_->add_get_handle("/", [](const http_request* request, std::shared_ptr<http_response> response) {
+        // 默认处理
+        response->write("Welcome to Media Server", strlen("Welcome to Media Server"));
+    });
+
+    log_infof("HTTP server initialized on port %d", config_.server.webrtc_port);
     return true;
+}
+
+void MediaServer::handle_webrtc_play(const http_request* request, std::shared_ptr<http_response> response) {
+    try {
+        // 解析请求体
+        std::string body(request->content_body_, request->content_length_);
+        json j = json::parse(body);
+
+        // 获取必要参数
+        std::string stream_id = j["stream_id"].get<std::string>();
+        std::string sdp = j["sdp"].get<std::string>();
+
+        // 处理 WebRTC 播放请求
+        // TODO: 实现具体的 WebRTC 播放逻辑
+
+        // 返回响应
+        json resp = {
+            {"code", 0},
+            {"msg", "success"},
+            {"data", {
+                {"sdp", "answer_sdp_here"}  // TODO: 替换为实际的 answer sdp
+            }}
+        };
+
+        response->add_header("Access-Control-Allow-Origin", "*");
+        response->add_header("Content-Type", "application/json");
+        response->write(resp.dump().c_str(), resp.dump().length());
+    } catch (const std::exception& e) {
+        json resp = {
+            {"code", -1},
+            {"msg", e.what()}
+        };
+        response->write(resp.dump().c_str(), resp.dump().length());
+    }
+}
+
+void MediaServer::handle_webrtc_publish(const http_request* request, std::shared_ptr<http_response> response) {
+    try {
+        // 解析请求体
+        std::string body(request->content_body_, request->content_length_);
+        json j = json::parse(body);
+
+        // 获取必要参数
+        std::string stream_id = j["stream_id"].get<std::string>();
+        std::string sdp = j["sdp"].get<std::string>();
+
+        // 处理 WebRTC 推流请求
+        // TODO: 实现具体的 WebRTC 推流逻辑
+
+        // 返回响应
+        json resp = {
+            {"code", 0},
+            {"msg", "success"},
+            {"data", {
+                {"sdp", "answer_sdp_here"}  // TODO: 替换为实际的 answer sdp
+            }}
+        };
+
+        response->add_header("Access-Control-Allow-Origin", "*");
+        response->add_header("Content-Type", "application/json");
+        response->write(resp.dump().c_str(), resp.dump().length());
+    } catch (const std::exception& e) {
+        json resp = {
+            {"code", -1},
+            {"msg", e.what()}
+        };
+        response->write(resp.dump().c_str(), resp.dump().length());
+    }
+}
+
+void MediaServer::handle_webrtc_stats(const http_request* request, std::shared_ptr<http_response> response) {
+    try {
+        // 获取统计信息
+        json stats = {
+            {"connections", MediaServer::get_instance()->get_stats().current_connections.load()},
+            {"bytes_in", MediaServer::get_instance()->get_stats().bytes_in.load()},
+            {"bytes_out", MediaServer::get_instance()->get_stats().bytes_out.load()}
+        };
+
+        json resp = {
+            {"code", 0},
+            {"msg", "success"},
+            {"data", stats}
+        };
+
+        response->add_header("Access-Control-Allow-Origin", "*");
+        response->add_header("Content-Type", "application/json");
+        response->write(resp.dump().c_str(), resp.dump().length());
+    } catch (const std::exception& e) {
+        json resp = {
+            {"code", -1},
+            {"msg", e.what()}
+        };
+        response->write(resp.dump().c_str(), resp.dump().length());
+    }
 }
 
 bool MediaServer::start() {
